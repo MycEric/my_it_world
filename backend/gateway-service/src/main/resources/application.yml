@@ -1,0 +1,104 @@
+# ============================================================
+# gateway-service 主配置文件
+# 端口 8080，所有前端请求统一访问此端口
+# ============================================================
+server:
+  port: 8080
+
+spring:
+  data:
+    redis:
+#      host: ${REDIS_HOST:127.0.0.1}
+      host: 10.8.7.58
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      database: 0
+
+
+  cloud:
+    gateway:
+      # 全局 CORS 配置（也可在 CorsConfig 中配置）
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOriginPatterns: "*"
+            allowedMethods: "*"
+            allowedHeaders: "*"
+            allowCredentials: true
+            maxAge: 3600
+
+      # 服务路由规则：使用 lb:// 协议通过 Nacos 负载均衡到具体实例
+      routes:
+        # 认证服务路由
+        - id: auth-service
+          uri: lb://auth-service
+          predicates:
+            - Path=/api/auth/**
+          filters:
+            # 去掉路径前缀（auth-service 内部仍使用 /api/auth/**）
+            - StripPrefix=0
+
+        # 阶段二预留：用户服务
+        - id: user-service
+          uri: lb://user-service
+          predicates:
+            - Path=/api/users/**
+          filters:
+            - StripPrefix=0
+
+        # 阶段二预留：内容服务
+        - id: content-service
+          uri: lb://content-service
+          predicates:
+            - Path=/api/content/**
+          filters:
+            - StripPrefix=0
+
+        # 阶段三预留：博客服务
+        - id: blog-service
+          uri: lb://blog-service
+          predicates:
+            - Path=/api/blogs/**
+          filters:
+            - StripPrefix=0
+
+        # 阶段四预留：文件服务
+        - id: file-service
+          uri: lb://file-service
+          predicates:
+            - Path=/api/files/**
+          filters:
+            - StripPrefix=0
+
+        # AI 对话服务（Python FastAPI，开发环境直连 8090）
+        - id: ai-service
+          uri: http://127.0.0.1:8090
+          predicates:
+            - Path=/api/ai/**
+          filters:
+            - StripPrefix=0
+
+      # 默认过滤器：可在此添加全局 Sentinel 限流等
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_UNIQUE
+
+# JWT 配置（必须与 auth-service 的 secret 一致）
+jwt:
+  secret: ${JWT_SECRET:my-it-world-jwt-secret-key-2024-very-long-string}
+
+# 网关白名单：无需 Token 即可访问的路径（Ant 风格匹配）
+gateway:
+  whitelist:
+    - /api/auth/login
+    - /api/auth/register
+    - /api/auth/refresh
+    - /api/ai/health
+    - /api/ai/chat
+    - /api/ai/sessions/*/messages
+    - /actuator/**
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

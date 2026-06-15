@@ -1,0 +1,18 @@
+# ============================================================
+# auth-service Bootstrap 配置
+# 此文件在 application.yml 之前加载，主要用于连接 Nacos 配置中心。
+# 阶段一使用本地配置即可，Nacos 地址需与 docker-compose 一致。
+# ============================================================
+spring:
+  application:
+    name: auth-service
+  cloud:
+    nacos:
+      discovery:
+        # Nacos 服务注册地址
+        server-addr: ${NACOS_SERVER:10.8.7.58:8848}
+        namespace: ${NACOS_NAMESPACE:}
+      config:
+        server-addr: ${NACOS_SERVER:10.8.7.58:8848}
+        file-extension: yaml
+        namespace: ${NACOS_NAMESPACE:}

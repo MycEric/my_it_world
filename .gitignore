@@ -1,0 +1,21 @@
+# Maven
+target/
+*.jar
+*.war
+*.class
+.mvn/wrapper/maven-wrapper.jar
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.iws
+*.ipr
+
+# 日志
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+backend/output

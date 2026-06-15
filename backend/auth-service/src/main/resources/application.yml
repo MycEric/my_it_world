@@ -1,0 +1,66 @@
+# ============================================================
+# auth-service 主配置文件
+# 端口 8081，数据库 myit_world（阶段一合并单库）
+# ============================================================
+server:
+  port: 8081
+
+spring:
+  datasource:
+    # 连接 Docker Compose 中的 MySQL，库名 myit_world
+    url: jdbc:mysql://${MYSQL_HOST:127.0.0.1}:${MYSQL_PORT:3306}/myit_world?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+    username: ${MYSQL_USER:root}
+    password: ${MYSQL_PASSWORD:demo1}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  data:
+    redis:
+      host: ${REDIS_HOST:10.8.7.58}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      database: 0
+      timeout: 3000ms
+
+# MyBatis-Plus 配置
+mybatis-plus:
+  configuration:
+    # 下划线转驼峰
+    map-underscore-to-camel-case: true
+    # 开发环境打印 SQL
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      # 逻辑删除字段值
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+      # 主键自增
+      id-type: auto
+
+# JWT 相关配置（与 gateway 保持一致）
+jwt:
+  # 签名密钥，生产环境务必通过环境变量注入且足够长（>=32字符）
+  secret: ${JWT_SECRET:my-it-world-jwt-secret-key-2024-very-long-string}
+  # Access Token 有效期：2 小时（毫秒）
+  access-expiration: 7200000
+  # Refresh Token 有效期：7 天（毫秒）
+  refresh-expiration: 604800000
+
+# Knife4j 接口文档
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /v3/api-docs
+
+knife4j:
+  enable: true
+  setting:
+    language: zh_cn
+
+# 健康检查端点
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
